@@ -116,14 +116,149 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 dark:bg-indigo-900 rounded-full mb-4">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-white relative overflow-hidden">
+      {/* Header */}
+      <div className="absolute top-8 left-0 right-0 text-center z-10">
+        <h1 className="text-4xl font-semibold text-gray-800 tracking-tight" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+          Say Hello to Courtney!
+        </h1>
+        <p className="text-sm text-gray-500 mt-2">Powered by VAPI</p>
+      </div>
+
+      {/* Error Message - Floating */}
+      {error && (
+        <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-20 animate-fade-in">
+          <div className="bg-red-50 border border-red-200 rounded-full px-6 py-3 shadow-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Circle Button */}
+      <div className="relative flex items-center justify-center">
+        {/* Animated circular waves when active */}
+        {isCallActive && (
+          <>
+            <div className="absolute w-72 h-72 rounded-full border-2 border-green-400 opacity-60 animate-wave-1" />
+            <div className="absolute w-80 h-80 rounded-full border-2 border-green-400 opacity-40 animate-wave-2" />
+            <div className="absolute w-88 h-88 rounded-full border-2 border-green-400 opacity-20 animate-wave-3" />
+          </>
+        )}
+
+        {/* Intense ripple effect when speaking */}
+        {isSpeaking && (
+          <>
+            <div className="absolute w-96 h-96 rounded-full bg-green-400 opacity-10 animate-ping" />
+            <div className="absolute w-80 h-80 rounded-full bg-green-500 opacity-20 animate-pulse" />
+          </>
+        )}
+
+        {/* Main Circle */}
+        <button
+          onClick={!isCallActive ? startCall : undefined}
+          disabled={isConnecting}
+          className={`relative w-64 h-64 rounded-full transition-all duration-500 transform hover:scale-105 active:scale-95 flex items-center justify-center ${
+            isCallActive
+              ? "bg-white border-4 border-green-500 shadow-green-glow cursor-default"
+              : isConnecting
+              ? "bg-white border-4 border-green-400 shadow-green-glow-soft animate-pulse cursor-wait"
+              : "bg-white border-4 border-green-500 hover:border-green-600 shadow-xl hover:shadow-green-glow-soft"
+          }`}
+        >
+          {/* Microphone Icon */}
+          <svg
+            className={`w-24 h-24 transition-all duration-300 ${
+              isCallActive || isConnecting
+                ? "text-green-500"
+                : "text-green-600"
+            } ${isSpeaking ? "scale-110" : "scale-100"}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+            />
+          </svg>
+
+          {/* Status text inside circle */}
+          <div className={`absolute bottom-12 text-sm font-light tracking-wider ${
+            isCallActive || isConnecting ? "text-green-600" : "text-green-700"
+          }`}>
+            {isConnecting ? "Connecting..." : isCallActive ? "Listening" : "Start"}
+          </div>
+        </button>
+
+        {/* Speaking indicator dots */}
+        {isSpeaking && (
+          <div className="absolute bottom-8 flex space-x-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" />
+            <div
+              className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
+              style={{ animationDelay: "0.1s" }}
+            />
+            <div
+              className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Status Badge */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 translate-y-48 mt-16">
+        <div className="flex items-center space-x-2 bg-gray-50 px-4 py-2 rounded-full shadow-md">
+          <div
+            className={`w-2 h-2 rounded-full ${
+              isCallActive
+                ? "bg-green-500 animate-pulse"
+                : isConnecting
+                ? "bg-yellow-400 animate-pulse"
+                : "bg-gray-400"
+            }`}
+          />
+          <span className="text-xs font-medium text-gray-700">{callStatus}</span>
+        </div>
+      </div>
+
+      {/* Floating Control Buttons - Only visible when call is active */}
+      {isCallActive && (
+        <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-4 animate-fade-in">
+          {/* Mute Button */}
+          <button
+            onClick={toggleMute}
+            className={`w-14 h-14 rounded-full transition-all duration-200 transform hover:scale-110 active:scale-95 shadow-lg flex items-center justify-center ${
+              isMuted
+                ? "bg-yellow-500 hover:bg-yellow-600"
+                : "bg-gray-700 hover:bg-gray-800"
+            }`}
+          >
+            {isMuted ? (
               <svg
-                className="w-10 h-10 text-indigo-600 dark:text-indigo-400"
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-6 h-6 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -135,130 +270,37 @@ export default function Home() {
                   d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                 />
               </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Voice Agent Demo
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Powered by VAPI
-            </p>
-          </div>
-
-          {/* Status Indicator */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Status
-              </span>
-              <div className="flex items-center space-x-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    isCallActive
-                      ? "bg-green-500 animate-pulse"
-                      : isConnecting
-                      ? "bg-yellow-500 animate-pulse"
-                      : "bg-gray-400"
-                  }`}
-                />
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {callStatus}
-                </span>
-              </div>
-            </div>
-
-            {/* Speaking Indicator */}
-            {isSpeaking && (
-              <div className="flex items-center space-x-2 text-sm text-indigo-600 dark:text-indigo-400">
-                <div className="flex space-x-1">
-                  <div className="w-1 h-4 bg-indigo-600 dark:bg-indigo-400 rounded animate-pulse" />
-                  <div
-                    className="w-1 h-4 bg-indigo-600 dark:bg-indigo-400 rounded animate-pulse"
-                    style={{ animationDelay: "0.1s" }}
-                  />
-                  <div
-                    className="w-1 h-4 bg-indigo-600 dark:bg-indigo-400 rounded animate-pulse"
-                    style={{ animationDelay: "0.2s" }}
-                  />
-                </div>
-                <span>Agent is speaking...</span>
-              </div>
             )}
-          </div>
+          </button>
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
-
-          {/* Controls */}
-          <div className="space-y-4">
-            {!isCallActive ? (
-              <button
-                onClick={startCall}
-                disabled={isConnecting}
-                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg disabled:cursor-not-allowed"
-              >
-                {isConnecting ? (
-                  <span className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Connecting...
-                  </span>
-                ) : (
-                  "Start Call"
-                )}
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={toggleMute}
-                  className={`w-full py-4 ${
-                    isMuted
-                      ? "bg-yellow-500 hover:bg-yellow-600"
-                      : "bg-gray-600 hover:bg-gray-700"
-                  } text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg`}
-                >
-                  {isMuted ? "Unmute" : "Mute"}
-                </button>
-
-                <button
-                  onClick={endCall}
-                  className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg"
-                >
-                  End Call
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* Info */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-              Click &quot;Start Call&quot; to begin your conversation with the AI assistant
-            </p>
-          </div>
+          {/* End Call Button */}
+          <button
+            onClick={endCall}
+            className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 transition-all duration-200 transform hover:scale-110 active:scale-95 shadow-lg flex items-center justify-center"
+          >
+            <svg
+              className="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
-      </div>
+      )}
+
+      {/* Instruction text - Only when not in call */}
+      {!isCallActive && !isConnecting && (
+        <div className="absolute bottom-16 text-center text-gray-400 text-sm animate-fade-in">
+          <p>Click the circle to start your conversation</p>
+        </div>
+      )}
     </main>
   );
 }
